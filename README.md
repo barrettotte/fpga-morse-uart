@@ -1,19 +1,15 @@
-# fpga-dev-vscode
+# fpga-morse-uart
 
-Simple FPGA development workflow with VS Code.
+Receives ASCII over UART, echo it back, and output as morse code beeps.
 
-The goal of this workflow is to avoid opening Vivado GUI.
-The example in this repo is a simple 1Hz LED blink using Basys 3 Artix-7 board (XC7A35TCPG236-1).
+Uses Basys 3 Artix-7 board (XC7A35TCPG236-1).
 
 ## Development
 
-This assumes Windows with WSL is used for FPGA development, it is required to use GTKWave.
-
-### Requirements
-
+Requirements:
 - WSL
 - Vivado 2024.1+
-- GTKWave
+- GTKWave (in WSL)
 
 Verify Vivado is installed and its binaries (`xilinx/Vivado/2024.1/bin`) are in system path with `vivado -version`.
 Also, verify GTKWave is installed on WSL with `wsl -e gtkwave --version`.
@@ -31,7 +27,6 @@ $env:SIM_MODULE='blink'; ./vivado.ps1 simulate
 wsl -e gtkwave build/blink_tb.vcd
 
 # build and upload bitstream to FPGA
-make program_board
 ./vivado.ps1 program_board
 ```
 

@@ -1,9 +1,9 @@
 # Vivado automation
 
 # TCL args
-$design_name = 'blink'
+$design_name = 'fpga-morse-uart'
 $fpga_part = 'xc7a35tcpg236-1'
-$top_module = 'blink'
+$top_module = 'fifo'
 
 # module to simulate (assumes testbench has _tb suffix)
 $sim_module = if ($env:SIM_MODULE) {$env:SIM_MODULE} else {$top_module}
