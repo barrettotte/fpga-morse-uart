@@ -14,11 +14,11 @@ fi
 target_module=$1
 tb_module="${target_module}_tb"
 
-build_dir=./build/iverilog
-mkdir -p "$build_dir"
-
 src_dir=./rtl
 test_dir=./tb
+
+build_dir=./build/iverilog
+mkdir -p "$build_dir"
 
 vvp_file="$build_dir/$tb_module.vvp"
 waveform="$build_dir/$tb_module.vcd"
@@ -29,7 +29,14 @@ iverilog "$test_dir/$tb_module.v" -I "$src_dir" -I "$test_dir" -o "$vvp_file"
 
 # simulate the testbench
 echo "Simulating $tb_module and outputting to $waveform"
-vvp "$vvp_file"
+sim_result=$(vvp "$vvp_file")
+echo "$sim_result"
+
+# exit if assertion failed
+if echo "$sim_result" | grep -q 'ASSERTION FAILED'; then
+  echo "Assertion failed during simulation of $tb_module"
+  exit 2
+fi
 mv "$tb_module.vcd" "$waveform"
 
 # open waveform (with optional .gtkw file)
