@@ -40,8 +40,21 @@ Optionally, you can still develop in project mode with the following:
 ./vivado.ps1 gui
 ```
 
+### Icarus Verilog
+
+To speed up development with Verilog, Icarus Verilog can be used in WSL.
+
+```sh
+# install dependencies
+apt-get install iverilog -y
+
+# build, simulate, and open waveform for module
+wsl ./verilog.sh top
+```
+
 ## References
 
 - [Basys 3 Reference Manual](https://digilent.com/reference/programmable-logic/basys-3/reference-manual)
 - [Vivado Design Suite Tcl Command Reference Guide](https://docs.amd.com/r/en-US/ug835-vivado-tcl-commands)
 - https://projectf.io/posts/vivado-tcl-build-script/
+- [FPGA Prototyping by Verilog Examples by Pong P. Chu (2008)](https://isbnsearch.org/isbn/9780470185322)
