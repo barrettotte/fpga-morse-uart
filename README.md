@@ -9,7 +9,7 @@ Uses Basys 3 Artix-7 board (XC7A35TCPG236-1).
 Requirements:
 - WSL
 - Vivado 2024.1+
-- GTKWave (in WSL)
+- GTKWave (in WSL `apt-get install gtkwave -y`)
 
 Verify Vivado is installed and its binaries (`xilinx/Vivado/2024.1/bin`) are in system path with `vivado -version`.
 Also, verify GTKWave is installed on WSL with `wsl -e gtkwave --version`.

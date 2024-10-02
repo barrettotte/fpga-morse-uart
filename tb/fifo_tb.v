@@ -3,14 +3,15 @@
 `timescale 1ns/1ps
 
 module fifo_tb;
+    // constants
     localparam WORD_BITS = 8;
     localparam ADDR_BITS = 4;
 
     // inputs
-    reg clk_100M = 0;
+    reg clk = 0;
     reg reset = 0;
-    reg rd = 0;
-    reg wr = 0;
+    reg read = 0;
+    reg write = 0;
     reg [WORD_BITS-1:0] wdata;
 
     // outputs
@@ -22,79 +23,86 @@ module fifo_tb;
     fifo #(
         .WORD_BITS(WORD_BITS),
         .ADDR_BITS(ADDR_BITS)
-    ) 
+    )
     DUT(
-        .i_clk(clk_100M),
-        .i_reset(reset),
-        .i_rd(rd),
-        .i_wr(wr),
-        .i_wdata(wdata),
-        .o_empty(empty),
-        .o_full(full),
-        .o_rdata(rdata)
+        .clk(clk),
+        .reset(reset),
+        .read(read),
+        .write(write),
+        .wdata(wdata),
+        .empty(empty),
+        .full(full),
+        .rdata(rdata)
     );
 
     // generate 100MHz clock signal (10ns period)
-    always #5 clk_100M = ~clk_100M;
+    always #5 clk = ~clk;
 
     initial begin
         $dumpfile("fifo_tb.vcd");
         $dumpvars(0, fifo_tb);
 
         // init
-        clk_100M = 0;
+        clk = 0;
         reset = 0;
-        wr = 0;
-        rd = 0;
+        write = 0;
+        read = 0;
         wdata = 0;
 
         // reset
-        #10 reset = 1;
-        @(posedge clk_100M);
-        #10 reset = 0;
-        @(posedge clk_100M);
+        #20 reset = 1;
+        #20 reset = 0;
         `assert(full, 0);
         `assert(empty, 1);
+
+        #100; // wait for stability
         
         // write until buffer is full
         $display("Writing to buffer:");
-        repeat((2**ADDR_BITS)+1) begin
-            @(posedge clk_100M);
-            wr = 1;
-            #1 $display("Wrote %0d to buffer, full=%0d, empty=%0d", wdata, full, empty);
+        repeat((2**ADDR_BITS)) begin
+            // start write
+            write = 1;
             wdata = wdata + 1;
+            @(posedge clk);
+            
+            // done write
+            write = 0;
+            #1 $display("Wrote %0d to buffer, full=%0d, empty=%0d", wdata, full, empty);
+            @(posedge clk);
         end
-        wr = 0;
 
         // assert state
         `assert(empty, 0);
         `assert(full, 1);
 
         // try writing to full buffer
-        @(posedge clk_100M);
-        wr = 1;
+        @(posedge clk);
+        write = 1;
         wdata = wdata + 1;
         #1 $display("Attempted to write %0d to full buffer, full=%0d", wdata, full);
-        wr = 0;
+        write = 0;
 
         // read from buffer until empty
         $display("Reading from buffer:");
-        repeat((2**ADDR_BITS)+1) begin
-            @(posedge clk_100M);
-            rd = 1;
+        repeat((2**ADDR_BITS)) begin
+            // start read
+            read = 1;
+            @(posedge clk);
+
+            // done read
+            read = 0;
             #1 $display("Read %0d from buffer, full=%0d, empty=%0d", rdata, full, empty);
+            @(posedge clk);
         end
-        rd = 0;
 
         // assert state
         `assert(full, 0);
         `assert(empty, 1);
 
         // try reading from empty buffer
-        @(posedge clk_100M);
-        rd = 1;
+        @(posedge clk);
+        read = 1;
         #1 $display("Attempted to read from empty buffer, rdata=%0d, empty=%0d", rdata, empty);
-        rd = 0;
 
         #20;
         $display("Simulation time: %t", $time);
