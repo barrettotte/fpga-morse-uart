@@ -7,14 +7,14 @@ module fifo
         parameter ADDR_BITS=4  // number of address bits (2^4 = 16 entries)
     )
     (
-        input wire clk,                    // clock
-        input wire reset,                  // reset
-        input wire read,                   // start read from FIFO
-        input wire write,                  // start write to FIFO
-        input wire [WORD_BITS-1:0] wdata,  // data to write to buffer
-        output wire [WORD_BITS-1:0] rdata, // data read from buffer
-        output wire empty,                 // if queue is empty it can be read from
-        output wire full                   // if queue is full it cannot be written to
+        input wire clk_i,                    // clock
+        input wire reset_i,                  // reset
+        input wire read_i,                   // start read from FIFO
+        input wire write_i,                  // start write to FIFO
+        input wire [WORD_BITS-1:0] wdata_i,  // data to write to buffer
+        output wire [WORD_BITS-1:0] rdata_o, // data read from buffer
+        output wire empty_o,                 // if queue is empty it can be read from
+        output wire full_o                   // if queue is full it cannot be written to
     );
 
     // internal signals
@@ -26,21 +26,21 @@ module fifo
     reg fifo_empty, empty_buff;                          // track if FIFO is empty
     
     // write data to buffer
-    always @(posedge clk) begin
+    always @(posedge clk_i) begin
         if (write_en) begin
-            buffer[wptr_curr] <= wdata;
+            buffer[wptr_curr] <= wdata_i;
         end
     end
 
     // read data from buffer
-    assign rdata = buffer[rptr_curr];
+    assign rdata_o = buffer[rptr_curr];
 
     // write enable only when buffer not full
-    assign write_en = write & ~fifo_full;
+    assign write_en = write_i & ~fifo_full;
 
-    // FIFO control logic (register logic)
-    always @(posedge clk, posedge reset) begin
-        if (reset) begin
+    // register logic
+    always @(posedge clk_i, posedge reset_i) begin
+        if (reset_i) begin
             wptr_curr <= 0;
             rptr_curr <= 0;
             fifo_full <= 1'b0;
@@ -65,7 +65,7 @@ module fifo
         empty_buff = fifo_empty;
 
         // handle operations
-        case ({write, read})
+        case ({write_i, read_i})
             // no read or write
             // 2'b00
 
@@ -105,7 +105,7 @@ module fifo
     end
 
     // output
-    assign full = fifo_full;
-    assign empty = fifo_empty;
+    assign full_o = fifo_full;
+    assign empty_o = fifo_empty;
 
 endmodule

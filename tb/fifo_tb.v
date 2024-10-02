@@ -20,19 +20,15 @@ module fifo_tb;
     wire [WORD_BITS-1:0] rdata;
 
     // design under test
-    fifo #(
-        .WORD_BITS(WORD_BITS),
-        .ADDR_BITS(ADDR_BITS)
-    )
-    DUT(
-        .clk(clk),
-        .reset(reset),
-        .read(read),
-        .write(write),
-        .wdata(wdata),
-        .empty(empty),
-        .full(full),
-        .rdata(rdata)
+    fifo #(.WORD_BITS(WORD_BITS), .ADDR_BITS(ADDR_BITS)) DUT(
+        .clk_i(clk),
+        .reset_i(reset),
+        .read_i(read),
+        .write_i(write),
+        .wdata_i(wdata),
+        .empty_o(empty),
+        .full_o(full),
+        .rdata_o(rdata)
     );
 
     // generate 100MHz clock signal (10ns period)
@@ -64,7 +60,7 @@ module fifo_tb;
             write = 1;
             wdata = wdata + 1;
             @(posedge clk);
-            
+
             // done write
             write = 0;
             #1 $display("Wrote %0d to buffer, full=%0d, empty=%0d", wdata, full, empty);
