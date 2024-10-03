@@ -45,14 +45,14 @@ module baud_generator_tb;
         // check counter max
         $display("test %0d", test_idx);
         repeat(M) @(posedge clk);
-        `assert(1, tick);
+        `ASSERT(1, tick);
         test_idx = test_idx + 1;
 
         // check counter reset correctly
         $display("test %0d", test_idx);
         repeat(3) @(posedge clk);
-        `assert(0, tick);
-        `assert(2, count);
+        `ASSERT(0, tick);
+        `ASSERT(2, count);
         test_idx = test_idx + 1;
 
         // done

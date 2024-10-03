@@ -18,7 +18,7 @@ module fifo
     );
 
     // internal signals
-    reg [WORD_BITS-1:0] buffer [2**ADDR_BITS-1:0];       // memory
+    reg [WORD_BITS-1:0] buffer [(2**ADDR_BITS)-1:0];       // memory
     wire write_en;                                       // track if write enabled
     reg [ADDR_BITS-1:0] wptr_curr, wptr_buff, wptr_next; // track head of queue
     reg [ADDR_BITS-1:0] rptr_curr, rptr_buff, rptr_next; // track tail of queue

@@ -48,8 +48,8 @@ module fifo_tb;
         // reset
         #20 reset = 1;
         #20 reset = 0;
-        `assert(full, 0);
-        `assert(empty, 1);
+        `ASSERT(full, 0);
+        `ASSERT(empty, 1);
 
         #100; // wait for stability
         
@@ -68,8 +68,8 @@ module fifo_tb;
         end
 
         // assert state
-        `assert(empty, 0);
-        `assert(full, 1);
+        `ASSERT(empty, 0);
+        `ASSERT(full, 1);
 
         // try writing to full buffer
         @(posedge clk);
@@ -92,8 +92,8 @@ module fifo_tb;
         end
 
         // assert state
-        `assert(full, 0);
-        `assert(empty, 1);
+        `ASSERT(full, 0);
+        `ASSERT(empty, 1);
 
         // try reading from empty buffer
         @(posedge clk);
