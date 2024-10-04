@@ -64,7 +64,8 @@ module uart_transmitter_tb;
         .tx_o(tx)
     );
 
-    integer test_idx = 0;
+    // test
+    integer bit_idx = WORD_BITS+1;
     reg [2+(WORD_BITS-1):0] transmitted;
 
     // clock generation
@@ -76,13 +77,12 @@ module uart_transmitter_tb;
     initial begin
         $dumpfile("uart_transmitter_tb.vcd");
         $dumpvars(0, uart_transmitter_tb);
-        $monitor("At time %t: test_idx=%0d, tx=%0b, done=%0b, transmitted=%0b", $time, test_idx, tx, tx_done, transmitted);
+        $monitor("At time %t: tx=%0b, done=%0b, transmitted=%0b", $time, tx, tx_done, transmitted);
 
         // init
         clk = 0;
         reset = 1;
         tx_start = 0;
-        data = 8'b01010101;
 
         // reset
         #(2 * CLK_PERIOD);
@@ -92,79 +92,80 @@ module uart_transmitter_tb;
         #(4 * CLK_PERIOD);
 
         // start transmission
+        data = 8'b01010101;
+        transmitted = 10'bx;
         tx_start = 1;
-        #(CLK_PERIOD);
+        #(10 * CLK_PERIOD);
         tx_start = 0;
 
         // start bit
-        `ASSERT_W_MSG(1'b1, tx, "asserting start bit.");
-        transmitted[WORD_BITS+1] = tx;
-        transmitted = transmitted >> 1;
+        `ASSERT_W_MSG(1'b0, tx, "asserting start bit.");
+        transmitted[bit_idx] = tx;
+        bit_idx = bit_idx - 1;
         #(CYCLES_PER_BIT);
 
         // bit 0
         `ASSERT_W_MSG(1'b1, tx, "asserting bit 0.");
-        transmitted[WORD_BITS+1] = tx;
-        transmitted = transmitted >> 1;
+        transmitted[bit_idx] = tx;
+        bit_idx = bit_idx - 1;
         #(CYCLES_PER_BIT);
 
         // bit 1
         `ASSERT_W_MSG(1'b0, tx, "asserting bit 1.");
-        transmitted[WORD_BITS+1] = tx;
-        transmitted = transmitted >> 1;
+        transmitted[bit_idx] = tx;
+        bit_idx = bit_idx - 1;
         #(CYCLES_PER_BIT);
 
         // bit 2
         `ASSERT_W_MSG(1'b1, tx, "asserting bit 2.");
-        transmitted[WORD_BITS+1] = tx;
-        transmitted = transmitted >> 1;
+        transmitted[bit_idx] = tx;
+        bit_idx = bit_idx - 1;
         #(CYCLES_PER_BIT);
 
         // bit 3
         `ASSERT_W_MSG(1'b0, tx, "asserting bit 3.");
-        transmitted[WORD_BITS+1] = tx;
-        transmitted = transmitted >> 1;
+        transmitted[bit_idx] = tx;
+        bit_idx = bit_idx - 1;
         #(CYCLES_PER_BIT);
 
         // bit 4
         `ASSERT_W_MSG(1'b1, tx, "asserting bit 4.");
-        transmitted[WORD_BITS+1] = tx;
-        transmitted = transmitted >> 1;
+        transmitted[bit_idx] = tx;
+        bit_idx = bit_idx - 1;
         #(CYCLES_PER_BIT);
 
         // bit 5
         `ASSERT_W_MSG(1'b0, tx, "asserting bit 5.");
-        transmitted[WORD_BITS+1] = tx;
-        transmitted = transmitted >> 1;
+        transmitted[bit_idx] = tx;
+        bit_idx = bit_idx - 1;
         #(CYCLES_PER_BIT);
 
         // bit 6
         `ASSERT_W_MSG(1'b1, tx, "asserting bit 6.");
-        transmitted[WORD_BITS+1] = tx;
-        transmitted = transmitted >> 1;
+        transmitted[bit_idx] = tx;
+        bit_idx = bit_idx - 1;
         #(CYCLES_PER_BIT);
 
         // bit 7
         `ASSERT_W_MSG(1'b0, tx, "asserting bit 7.");
-        transmitted[WORD_BITS+1] = tx;
-        transmitted = transmitted >> 1;
+        transmitted[bit_idx] = tx;
+        bit_idx = bit_idx - 1;
         #(CYCLES_PER_BIT);
 
         // stop bit
         `ASSERT_W_MSG(1'b1, tx, "asserting stop bit.");
-        transmitted[WORD_BITS+1] = tx;
+        transmitted[bit_idx] = tx;
 
         // wait for transmit complete
         wait(tx_done);
-        `ASSERT_W_MSG({1'b1, data, 1'b1}, transmitted, "asserting transmitted bits");
+        `ASSERT_W_MSG({1'b0, 8'b10101010, 1'b1}, transmitted, "asserting transmitted bits");
+        // start bit, data (LSB to MSB), stop bit
 
         // reinit for another byte
         #25000;
         clk = 0;
         reset = 1;
         tx_start = 0;
-        data = 8'b11001100;
-        transmitted = 0;
 
         // reset
         #(2 * CLK_PERIOD);
@@ -174,21 +175,25 @@ module uart_transmitter_tb;
         #(4 * CLK_PERIOD);
 
         // start transmission
+        data = 8'b11001100;
+        transmitted = 10'bx;
         tx_start = 1;
-        #(CLK_PERIOD);
+        #(10 * CLK_PERIOD);
         tx_start = 0;
 
-        // receive transmitted bits (start bit, data bits, stop bit)
-        repeat(WORD_BITS-1) begin
-            transmitted[WORD_BITS+1] = tx;
-            transmitted = transmitted >> 1;
+        // receive transmitted bits
+        bit_idx = WORD_BITS+1;
+        repeat(WORD_BITS+1) begin
+            transmitted[bit_idx] = tx;
+            bit_idx = bit_idx - 1;
             #(CYCLES_PER_BIT);
         end
-        transmitted[WORD_BITS+1] = tx;
+        transmitted[bit_idx] = tx;
 
         // wait for transmit complete
         wait(tx_done);
-        `ASSERT_W_MSG({1'b1, data, 1'b1}, transmitted, "asserting transmitted bits");
+        `ASSERT_W_MSG({1'b0, 8'b00110011, 1'b1}, transmitted, "asserting transmitted bits");
+        // start bit, data (LSB to MSB), stop bit
         
         // done
         #(10 * CLK_PERIOD);
