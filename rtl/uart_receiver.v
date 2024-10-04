@@ -12,7 +12,7 @@ module uart_receiver
         input wire reset_i,                // reset
         input wire rx_i,                   // receive data bit
         input wire baud_i,                 // tick from baud generator
-        output reg ready_o,                // signal when available to receive data
+        output reg rx_done_o,              // signal when data receive is completed
         output wire [WORD_BITS-1:0] data_o // data to FIFO
     );
 
@@ -49,7 +49,7 @@ module uart_receiver
         tick_next = tick_curr;
         len_next = len_curr;
         data_next = data_curr;
-        ready_o = 1'b0;
+        rx_done_o = 1'b0;
 
         case (state_curr)
             STATE_IDLE: begin
@@ -98,7 +98,7 @@ module uart_receiver
                 if (baud_i) begin
                     if (tick_curr == SAMPLE_TICKS-1) begin
                         state_next = STATE_IDLE;
-                        ready_o = 1'b1;
+                        rx_done_o = 1'b1;
                     end else begin
                         tick_next = tick_curr + 1;
                     end

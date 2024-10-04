@@ -1,10 +1,9 @@
 `include "include/assert.vh"
-`include "../rtl/uart_receiver.v"
-`include "../rtl/baud_generator.v"
+`include "../rtl/uart_top.v"
 
 `timescale 1ns/1ps
 
-module uart_receiver_tb;
+module uart_top_tb;
 
     // constants
     localparam WORD_BITS = 8;
@@ -37,31 +36,32 @@ module uart_receiver_tb;
     reg rx = 0;
 
     // outputs
+    wire tx;
     wire rx_done;
-    wire [WORD_BITS-1:0] data;
+    wire tx_done;
     wire baud_tick;
 
-    // baud rate generator. N = log2(651) = ~10 bits, M = clock divider
-    baud_generator #(.N($clog2(BAUD_DIV)), .M(BAUD_DIV)) baud_gen (
-        .clk_i(clk),
-        .reset_i(reset),
-        .tick_o(baud_tick),
-        .count_o()
-    );
-
     // design under test
-    uart_receiver #(
+    uart_top #(
         .WORD_BITS(WORD_BITS),
-        .SAMPLE_TICKS(SAMPLE_TICKS)
-    ) 
+        .SAMPLE_TICKS(SAMPLE_TICKS),
+        .BAUD_LIMIT(BAUD_DIV),
+        .BAUD_BITS($clog2(BAUD_DIV)),
+        .FIFO_ADDR_BITS(2)
+    )
     DUT(
         .clk_i(clk),
         .reset_i(reset),
         .rx_i(rx),
-        .baud_i(baud_tick),
+        .tx_o(tx),
         .rx_done_o(rx_done),
-        .data_o(data)
+        .tx_done_o(tx_done),
+        .baud_tick_o(baud_tick)
     );
+
+    // test
+    integer bit_idx = WORD_BITS+1;
+    reg [2+(WORD_BITS-1):0] transmitted;
 
     // clock generation
     initial begin
@@ -70,9 +70,8 @@ module uart_receiver_tb;
     end
 
     initial begin
-        $dumpfile("uart_receiver_tb.vcd");
-        $dumpvars(0, uart_receiver_tb);
-        $monitor("At time %t: baud_tick=%0d, data=%0d, rx_done=%0d", $time, baud_tick, data, rx_done);
+        $dumpfile("uart_top_tb.vcd");
+        $dumpvars(0, uart_top_tb);
 
         // init
         clk = 0;
@@ -80,19 +79,30 @@ module uart_receiver_tb;
         rx = 1; // idle
 
         // reset
-        #(2 * CLK_PERIOD);
+        #(5 * CLK_PERIOD);
         reset = 0;
 
-        // wait for stability
-        #(4 * CLK_PERIOD);
-
         // send byte and wait for done signal
-        uart_send_packet(8'b01010101);
+        uart_send_packet(8'b11001100);
         wait (rx_done);
 
-        // check data received successfully
-        `ASSERT(8'b01010101, data);
+        // wait for stability
+        #(5 * CLK_PERIOD);
 
+        // receive transmitted bits
+        bit_idx = WORD_BITS+1;
+        repeat (WORD_BITS+1) begin
+            transmitted[bit_idx] = tx;
+            bit_idx = bit_idx - 1;
+            #(CYCLES_PER_BIT);
+        end
+        transmitted[bit_idx] = tx;
+
+        // wait for transmit complete
+        wait (tx_done);
+        `ASSERT_W_MSG({1'b0, 8'b00110011, 1'b1}, transmitted, "asserting transmitted bits");
+        // start bit, data (LSB to MSB), stop bit
+        
         // done
         #(10 * CLK_PERIOD);
         $display("Simulation time: %t", $time);
