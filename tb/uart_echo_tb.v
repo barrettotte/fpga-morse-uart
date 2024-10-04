@@ -1,9 +1,9 @@
 `include "include/assert.vh"
-`include "../rtl/uart_top.v"
+`include "../rtl/uart_echo.v"
 
 `timescale 1ns/1ps
 
-module uart_top_tb;
+module uart_echo_tb;
 
     // constants
     localparam WORD_BITS = 8;
@@ -42,7 +42,7 @@ module uart_top_tb;
     wire baud_tick;
 
     // design under test
-    uart_top #(
+    uart_echo #(
         .WORD_BITS(WORD_BITS),
         .SAMPLE_TICKS(SAMPLE_TICKS),
         .BAUD_LIMIT(BAUD_DIV),
@@ -70,8 +70,8 @@ module uart_top_tb;
     end
 
     initial begin
-        $dumpfile("uart_top_tb.vcd");
-        $dumpvars(0, uart_top_tb);
+        $dumpfile("uart_echo_tb.vcd");
+        $dumpvars(0, uart_echo_tb);
 
         // init
         clk = 0;

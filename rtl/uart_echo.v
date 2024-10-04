@@ -5,7 +5,7 @@
 
 `timescale 1ns/1ps
 
-module uart_top
+module uart_echo
     #(
         parameter WORD_BITS = 8,     // bits in data word
 
