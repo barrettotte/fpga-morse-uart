@@ -86,16 +86,14 @@ module uart_top_tb;
         uart_send_packet(8'b11001100);
         wait (rx_done);
 
-        // wait for stability
-        #(5 * CLK_PERIOD);
-
         // receive transmitted bits
         bit_idx = WORD_BITS+1;
         repeat (WORD_BITS+1) begin
+            #(CYCLES_PER_BIT);
             transmitted[bit_idx] = tx;
             bit_idx = bit_idx - 1;
-            #(CYCLES_PER_BIT);
         end
+        #(CYCLES_PER_BIT);
         transmitted[bit_idx] = tx;
 
         // wait for transmit complete
