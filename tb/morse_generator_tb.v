@@ -20,16 +20,11 @@ module morse_generator_tb;
     reg clk = 0;
     reg reset = 0;
     reg [7:0] ascii = 0;
-    reg start = 0;
+    reg en = 0;
 
     // outputs
     wire morse;
     wire done;
-
-    wire is_dash;
-    wire is_dot;
-    wire is_symbol;
-    wire is_word;
 
     // design under test
     morse_generator #(
@@ -39,15 +34,12 @@ module morse_generator_tb;
         .clk_i(clk),
         .reset_i(reset),
         .ascii_i(ascii),
-        .start_i(start),
+        .en_i(en),
         .morse_o(morse),
-        .done_o(done),
-
-        .is_dash_o(is_dash),
-        .is_dot_o(is_dot),
-        .is_symbol_o(is_symbol),
-        .is_word_o(is_word)
+        .done_o(done)
     );
+
+    integer i;
 
     // clock generation
     initial begin
@@ -72,17 +64,46 @@ module morse_generator_tb;
         #(4 * CLK_PERIOD);
 
         // test morse conversion
-        ascii = 8'h41; // 'A' (01000001)
-        start = 1;
+        ascii = 8'h41; // 'A' (01000001) => '.-'
+        en = 1;
         #(CLK_PERIOD);
 
-        // wait for dot
-        #(1 * MORSE_CYCLES);
+        #(1 * MORSE_CYCLES); // dot
         `ASSERT_W_MSG(1'b1, morse, "Asserting symbol 1 of 'A', dot")
+        #(1 * MORSE_CYCLES); // between
 
-        #(3 * MORSE_CYCLES);
+        #(3 * MORSE_CYCLES); // dash
         `ASSERT_W_MSG(1'b1, morse, "Asserting symbol 2 of 'A', dash")
-        
+        #(1 * MORSE_CYCLES); // between
+
+        wait (done);
+        #(CLK_PERIOD);
+
+        // test another character
+        ascii = 8'b00111001; // '9' => '----.'
+        en = 1;
+        #(CLK_PERIOD);
+
+        #(3 * MORSE_CYCLES); // dash
+        `ASSERT_W_MSG(1'b1, morse, "Asserting symbol 1 of '9', dash")
+        #(1 * MORSE_CYCLES); // between
+
+        #(3 * MORSE_CYCLES); // dash
+        `ASSERT_W_MSG(1'b1, morse, "Asserting symbol 2 of '9', dash")
+        #(1 * MORSE_CYCLES); // between
+
+        #(3 * MORSE_CYCLES); // dash
+        `ASSERT_W_MSG(1'b1, morse, "Asserting symbol 3 of '9', dash")
+        #(1 * MORSE_CYCLES); // between
+
+        #(3 * MORSE_CYCLES); // dash
+        `ASSERT_W_MSG(1'b1, morse, "Asserting symbol 4 of '9', dash")
+        #(1 * MORSE_CYCLES); // between
+
+        #(1 * MORSE_CYCLES); // dot
+        `ASSERT_W_MSG(1'b1, morse, "Asserting symbol 5 of '9', dot")
+        #(1 * MORSE_CYCLES); // between
+
         wait (done);
         
         // done

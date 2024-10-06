@@ -20,11 +20,6 @@ module top_tb;
     // standard values: 9600, 19200, 38400, 57600, 115200
     localparam BAUD_RATE = 9600;
 
-    // clock divider for baud rate.
-    // baud divider = (f / baud rate) / samples
-    // Example: 100,000,000 / 9600 / 16 = ~651
-    localparam BAUD_DIV = CLK_FREQ / BAUD_RATE / SAMPLE_TICKS;
-
     // Clock cycles per bit.
     // cycles = (f * T) / baud rate
     // Example: 1/9600 = 104.167us = ~104167ns
@@ -36,24 +31,28 @@ module top_tb;
     reg rx = 0;
 
     // outputs
+    wire tx;
+    wire rx_done;
+    wire tx_done;
+    wire uart_fifo_empty;
+    wire uart_fifo_full;
     wire [6:0] sev_seg_encoded;
     wire [3:0] sev_seg_anodes;
-    wire tx;
-    wire tx_done;
-    wire rx_done;
-    wire [7:0] tx_data;
+    wire morse;
 
     // design under test
     top DUT (
         .clk_i(clk),
         .reset_i(reset),
         .rx_i(rx),
-        .sev_seg_encoded_o(sev_seg_encoded),
-        .sev_seg_anodes_o(sev_seg_anodes),
         .tx_o(tx),
         .rx_done_o(rx_done),
         .tx_done_o(tx_done),
-        .tx_data_o(tx_data)
+        .uart_fifo_empty_o(uart_fifo_empty),
+        .uart_fifo_full_o(uart_fifo_full),
+        .sev_seg_encoded_o(sev_seg_encoded),
+        .sev_seg_anodes_o(sev_seg_anodes),
+        .morse_o(morse)
     );
 
     // test
@@ -81,7 +80,7 @@ module top_tb;
 
         // send byte and wait for done signal
         uart_send_packet(8'b11001100);
-        // wait (rx_done);
+        wait (rx_done);
 
         // receive transmitted bits
         bit_idx = WORD_BITS+1;
@@ -94,7 +93,7 @@ module top_tb;
         transmitted[bit_idx] = tx;
 
         // wait for transmit complete
-        // wait (tx_done);
+        wait (tx_done);
         `ASSERT_W_MSG({1'b0, 8'b00110011, 1'b1}, transmitted, "asserting transmitted bits")
         // start bit, data (LSB to MSB), stop bit
 

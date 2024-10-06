@@ -1,5 +1,6 @@
 `include "./seven_seg_controller.v"
 `include "./uart_echo.v"
+`include "./morse_generator.v"
 
 `timescale 1ns/1ps
 
@@ -13,14 +14,14 @@ module top
 
         output wire rx_done_o,               // UART receive finished
         output wire tx_done_o,               // UART transmit finished
-        output wire fifo_empty_o,            // FIFO empty, no reads
-        output wire fifo_full_o,             // FIFO full, no write
+        output wire uart_fifo_empty_o,       // UART FIFO empty, no reads
+        output wire uart_fifo_full_o,        // UART FIFO full, no write
 
         output wire [6:0] sev_seg_encoded_o, // 7-segment encoded value
         output wire [3:0] sev_seg_anodes_o,  // 7-segment selector
 
-        // temp
-        output wire [7:0] tx_data_o
+        output wire morse_o,                 // morse signal
+        output wire morse_done_o             // morse done signal
     );
 
     // constants
@@ -30,12 +31,15 @@ module top
     localparam BAUD_RATE = 9600;
     localparam BAUD_DIV = CLK_FREQ / BAUD_RATE / SAMPLE_TICKS;
     localparam BAUD_BITS = $clog2(BAUD_DIV);
-    localparam FIFO_ADDR_BITS = 5; // 32 bytes
+    localparam UART_FIFO_ADDR_BITS = 3;  // 8 bytes
+    localparam MORSE_FIFO_ADDR_BITS = 6; // 64 bytes
     localparam SEV_SEG_REFRESH = 1000;
+    localparam MORSE_CYCLES = 5_000_000; // 50 * (10**6); // 50ms
 
     // wiring/regs
     wire [WORD_BITS-1:0] rx_data;
     wire [WORD_BITS-1:0] tx_data;
+    wire morse_en;
 
     // UART echo
     uart_echo #(
@@ -43,18 +47,20 @@ module top
         .SAMPLE_TICKS(SAMPLE_TICKS),
         .BAUD_LIMIT(BAUD_DIV),
         .BAUD_BITS(BAUD_BITS),
-        .FIFO_ADDR_BITS(FIFO_ADDR_BITS)
+        .FIFO_ADDR_BITS(UART_FIFO_ADDR_BITS)
     ) uart (
         .clk_i(clk_i),
         .reset_i(reset_i),
         .rx_i(rx_i),
+
         .tx_o(tx_o),
         .tx_data_o(tx_data),
         .rx_data_o(rx_data),
         .rx_done_o(rx_done_o),
         .tx_done_o(tx_done_o),
-        .fifo_empty_o(fifo_empty_o),
-        .fifo_full_o(fifo_full_o),
+
+        .fifo_empty_o(uart_fifo_empty_o),
+        .fifo_full_o(uart_fifo_full_o),
 
         // disconnected
         .baud_tick_o()
@@ -72,6 +78,21 @@ module top
         .anodes_o(sev_seg_anodes_o)
     );
 
+    // ASCII to morse code generator
+    morse_generator #(
+        .MORSE_CYCLES(MORSE_CYCLES)
+    ) morse (
+        .clk_i(clk_i),
+        .reset_i(reset_i),
+        .ascii_i(rx_data),
+        .en_i(morse_en),
+        .morse_o(morse_o),
+        .done_o(morse_done_o)
+    );
+
+    assign morse_en = tx_done_o;
+
+    // other outputs
     assign tx_data_o = tx_data;
 
 endmodule

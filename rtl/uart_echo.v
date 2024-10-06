@@ -42,7 +42,8 @@ module uart_echo
     // wiring/regs
     wire [WORD_BITS-1:0] rx_to_fifo;
     wire [WORD_BITS-1:0] fifo_to_tx;
-    wire fifo_write, fifo_read;
+    wire fifo_read, fifo_write;
+    reg tx_start;
 
     // baud rate generator
     baud_generator #(.M(BAUD_LIMIT), .N(BAUD_BITS)) baud (
@@ -82,21 +83,23 @@ module uart_echo
         .tx_o(tx_o)
     );
 
-    reg tx_start;
+    // handle transmit start
     always @(posedge clk_i or posedge reset_i) begin
         if (reset_i) begin
             tx_start <= 0;
         end else if (rx_done_o && !fifo_full_o) begin
-            tx_start <= 1; // Start transmission when a byte is received
+            tx_start <= 1; // start transmit after byte received
         end else if (tx_done_o) begin
-            tx_start <= 0; // Reset tx_start after transmission is complete
+            tx_start <= 0; // reset after transmit completed
         end
     end
 
-    assign rx_data_o = rx_to_fifo;
-    assign tx_data_o = fifo_to_tx;
-
+    // FIFO control
     assign fifo_write = rx_done_o && !fifo_full_o;
     assign fifo_read = tx_done_o && !fifo_empty_o;
+
+    // misc outputs
+    assign rx_data_o = rx_to_fifo;
+    assign tx_data_o = fifo_to_tx;
 
 endmodule
