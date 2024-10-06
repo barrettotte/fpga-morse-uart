@@ -15,7 +15,10 @@ module baud_generator_tb;
     wire [N-1:0] count;
 
     // design under test
-    baud_generator #(.N(N), .M(M)) DUT (
+    baud_generator #(
+        .N(N), 
+        .M(M)
+    ) DUT (
         .clk_i(clk),
         .reset_i(reset),
         .tick_o(tick),
@@ -45,14 +48,14 @@ module baud_generator_tb;
         // check counter max
         $display("test %0d", test_idx);
         repeat(M) @(posedge clk);
-        `ASSERT(1, tick);
+        `ASSERT(1, tick)
         test_idx = test_idx + 1;
 
         // check counter reset correctly
         $display("test %0d", test_idx);
         repeat(3) @(posedge clk);
-        `ASSERT(0, tick);
-        `ASSERT(2, count);
+        `ASSERT(0, tick)
+        `ASSERT(2, count)
         test_idx = test_idx + 1;
 
         // done

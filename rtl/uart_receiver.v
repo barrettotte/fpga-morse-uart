@@ -22,7 +22,7 @@ module uart_receiver
                      STATE_DATA  = 2'b10,
                      STATE_STOP  = 2'b11;
 
-    // internal
+    // wiring/regs
     reg [1:0] state_curr, state_next;         // state
     reg [3:0] tick_curr, tick_next;           // number of ticks from baud generator
     reg [2:0] len_curr, len_next;             // number of bits received (2^3 = 8)

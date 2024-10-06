@@ -20,7 +20,10 @@ module fifo_tb;
     wire [WORD_BITS-1:0] rdata;
 
     // design under test
-    fifo #(.WORD_BITS(WORD_BITS), .ADDR_BITS(ADDR_BITS)) DUT(
+    fifo #(
+        .WORD_BITS(WORD_BITS), 
+        .ADDR_BITS(ADDR_BITS)
+    ) DUT (
         .clk_i(clk),
         .reset_i(reset),
         .read_i(read),
@@ -48,8 +51,8 @@ module fifo_tb;
         // reset
         #20 reset = 1;
         #20 reset = 0;
-        `ASSERT(full, 0);
-        `ASSERT(empty, 1);
+        `ASSERT(full, 0)
+        `ASSERT(empty, 1)
 
         #100; // wait for stability
         
@@ -68,8 +71,8 @@ module fifo_tb;
         end
 
         // assert state
-        `ASSERT(empty, 0);
-        `ASSERT(full, 1);
+        `ASSERT(empty, 0)
+        `ASSERT(full, 1)
 
         // try writing to full buffer
         @(posedge clk);
@@ -92,8 +95,8 @@ module fifo_tb;
         end
 
         // assert state
-        `ASSERT(full, 0);
-        `ASSERT(empty, 1);
+        `ASSERT(full, 0)
+        `ASSERT(empty, 1)
 
         // try reading from empty buffer
         @(posedge clk);

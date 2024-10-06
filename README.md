@@ -4,6 +4,24 @@ Receives ASCII over UART, echo it back, and output as morse code beeps.
 
 Uses Basys 3 Artix-7 board (XC7A35TCPG236-1).
 
+## Serial Terminal
+
+To test with FPGA, a serial connection is needed.
+
+Find USB serial port with `Device Manager > Ports (COM & LPT) > USB Serial Port (COM?)`
+
+or with PowerShell `Get-PnpDevice -Class "Ports" | Select-Object -Property InstanceId, FriendlyName`
+
+Use [PuTTY](https://www.putty.org/) or other serial terminal with config:
+```txt
+Serial line:   COM?
+Speed (baud):  9600
+Data bits:     8
+Stop bits:     1
+Parity:        None
+Flow control:  XON/XOFF
+```
+
 ## Development
 
 Requirements:
@@ -58,3 +76,5 @@ wsl ./verilog.sh top
 - [Vivado Design Suite Tcl Command Reference Guide](https://docs.amd.com/r/en-US/ug835-vivado-tcl-commands)
 - https://projectf.io/posts/vivado-tcl-build-script/
 - [FPGA Prototyping by Verilog Examples by Pong P. Chu (2008)](https://isbnsearch.org/isbn/9780470185322)
+- https://digilent.com/reference/basys3/refmanual#seven_segment_display
+- https://morsecode.world/american/morse.html

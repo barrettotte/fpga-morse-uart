@@ -12,7 +12,7 @@ module baud_generator
         output wire [N-1:0] count_o // counter value
     );
 
-    // internal signals
+    // wiring/regs
     reg [N-1:0] count_curr;
     wire [N-1:0] count_next;
 

@@ -3,8 +3,8 @@
 // first-in-first-out (FIFO) queue based on a circular buffer
 module fifo
     #(
-        parameter WORD_BITS=8, // number of bits in word
-        parameter ADDR_BITS=4  // number of address bits (2^4 = 16 entries)
+        parameter WORD_BITS = 8, // number of bits in word
+        parameter ADDR_BITS = 2 // number of address bits (2^2 = 4 entries)
     )
     (
         input wire clk_i,                    // clock
@@ -17,21 +17,19 @@ module fifo
         output wire full_o                   // if queue is full it cannot be written to
     );
 
-    // internal signals
-    reg [WORD_BITS-1:0] buffer [(2**ADDR_BITS)-1:0];       // memory
+    // constants
+    localparam BUFFER_SIZE = (2**ADDR_BITS);
+
+    // wiring/regs
+    reg [WORD_BITS-1:0] buffer [BUFFER_SIZE-1:0];       // memory
     wire write_en;                                       // track if write enabled
     reg [ADDR_BITS-1:0] wptr_curr, wptr_buff, wptr_next; // track head of queue
     reg [ADDR_BITS-1:0] rptr_curr, rptr_buff, rptr_next; // track tail of queue
     reg fifo_full, full_buff;                            // track if FIFO is full
     reg fifo_empty, empty_buff;                          // track if FIFO is empty
-    
-    // write data to buffer
-    always @(posedge clk_i) begin
-        if (write_en) begin
-            buffer[wptr_curr] <= wdata_i;
-        end
-    end
 
+    integer i;
+    
     // read data from buffer
     assign rdata_o = buffer[rptr_curr];
 
@@ -45,7 +43,18 @@ module fifo
             rptr_curr <= 0;
             fifo_full <= 1'b0;
             fifo_empty <= 1'b1;
+
+            // reset buffer
+            for (i = 0; i < (BUFFER_SIZE-1); i = i + 1) begin
+                buffer[i] <= 0;
+            end
+
         end else begin
+            // write data to buffer
+            if (write_en) begin
+                buffer[wptr_curr] <= wdata_i;
+            end
+
             wptr_curr <= wptr_buff;
             rptr_curr <= rptr_buff;
             fifo_full <= full_buff;
@@ -66,8 +75,14 @@ module fifo
 
         // handle operations
         case ({write_i, read_i})
+
             // no read or write
-            // 2'b00
+            2'b00:  begin
+                wptr_buff = wptr_curr;
+                rptr_buff = rptr_curr;
+                full_buff = fifo_full;
+                empty_buff = fifo_empty;
+            end
 
             // read
             2'b01: 

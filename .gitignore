@@ -1,17 +1,14 @@
-misc/vivado-docker/*.env
-misc/vivado-docker/*.bin
-
 vivado*.jou
 vivado*.log
 vivado*.str
 clockinfo.txt
-
-build/
 .Xil/
+*.vcd
 
 project/*
 !project/*.tcl
 
-*.vcd
-
+build/
 tmp/
+
+*.bkp

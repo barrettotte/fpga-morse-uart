@@ -54,7 +54,7 @@ module uart_receiver_tb;
         .WORD_BITS(WORD_BITS),
         .SAMPLE_TICKS(SAMPLE_TICKS)
     ) 
-    DUT(
+    DUT (
         .clk_i(clk),
         .reset_i(reset),
         .rx_i(rx),
@@ -91,7 +91,7 @@ module uart_receiver_tb;
         wait (rx_done);
 
         // check data received successfully
-        `ASSERT(8'b01010101, data);
+        `ASSERT(8'b01010101, data)
 
         // done
         #(10 * CLK_PERIOD);

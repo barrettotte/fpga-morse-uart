@@ -40,9 +40,13 @@ module uart_transmitter_tb;
     // outputs
     wire tx_done;
     wire tx;
+    wire baud_tick;
 
     // baud rate generator. N = log2(651) = ~10 bits, M = clock divider
-    baud_generator #(.N($clog2(BAUD_DIV)), .M(BAUD_DIV)) baud_gen (
+    baud_generator #(
+        .N($clog2(BAUD_DIV)), 
+        .M(BAUD_DIV)
+    ) baud_gen (
         .clk_i(clk),
         .reset_i(reset),
         .tick_o(baud_tick),
@@ -54,7 +58,7 @@ module uart_transmitter_tb;
         .WORD_BITS(WORD_BITS),
         .SAMPLE_TICKS(SAMPLE_TICKS)
     )
-    DUT(
+    DUT (
         .clk_i(clk),
         .reset_i(reset),
         .tx_start_i(tx_start),
@@ -99,66 +103,66 @@ module uart_transmitter_tb;
         tx_start = 0;
 
         // start bit
-        `ASSERT_W_MSG(1'b0, tx, "asserting start bit.");
+        `ASSERT_W_MSG(1'b0, tx, "asserting start bit.")
         transmitted[bit_idx] = tx;
         bit_idx = bit_idx - 1;
         #(CYCLES_PER_BIT);
 
         // bit 0
-        `ASSERT_W_MSG(1'b1, tx, "asserting bit 0.");
+        `ASSERT_W_MSG(1'b1, tx, "asserting bit 0.")
         transmitted[bit_idx] = tx;
         bit_idx = bit_idx - 1;
         #(CYCLES_PER_BIT);
 
         // bit 1
-        `ASSERT_W_MSG(1'b0, tx, "asserting bit 1.");
+        `ASSERT_W_MSG(1'b0, tx, "asserting bit 1.")
         transmitted[bit_idx] = tx;
         bit_idx = bit_idx - 1;
         #(CYCLES_PER_BIT);
 
         // bit 2
-        `ASSERT_W_MSG(1'b1, tx, "asserting bit 2.");
+        `ASSERT_W_MSG(1'b1, tx, "asserting bit 2.")
         transmitted[bit_idx] = tx;
         bit_idx = bit_idx - 1;
         #(CYCLES_PER_BIT);
 
         // bit 3
-        `ASSERT_W_MSG(1'b0, tx, "asserting bit 3.");
+        `ASSERT_W_MSG(1'b0, tx, "asserting bit 3.")
         transmitted[bit_idx] = tx;
         bit_idx = bit_idx - 1;
         #(CYCLES_PER_BIT);
 
         // bit 4
-        `ASSERT_W_MSG(1'b1, tx, "asserting bit 4.");
+        `ASSERT_W_MSG(1'b1, tx, "asserting bit 4.")
         transmitted[bit_idx] = tx;
         bit_idx = bit_idx - 1;
         #(CYCLES_PER_BIT);
 
         // bit 5
-        `ASSERT_W_MSG(1'b0, tx, "asserting bit 5.");
+        `ASSERT_W_MSG(1'b0, tx, "asserting bit 5.")
         transmitted[bit_idx] = tx;
         bit_idx = bit_idx - 1;
         #(CYCLES_PER_BIT);
 
         // bit 6
-        `ASSERT_W_MSG(1'b1, tx, "asserting bit 6.");
+        `ASSERT_W_MSG(1'b1, tx, "asserting bit 6.")
         transmitted[bit_idx] = tx;
         bit_idx = bit_idx - 1;
         #(CYCLES_PER_BIT);
 
         // bit 7
-        `ASSERT_W_MSG(1'b0, tx, "asserting bit 7.");
+        `ASSERT_W_MSG(1'b0, tx, "asserting bit 7.")
         transmitted[bit_idx] = tx;
         bit_idx = bit_idx - 1;
         #(CYCLES_PER_BIT);
 
         // stop bit
-        `ASSERT_W_MSG(1'b1, tx, "asserting stop bit.");
+        `ASSERT_W_MSG(1'b1, tx, "asserting stop bit.")
         transmitted[bit_idx] = tx;
 
         // wait for transmit complete
         wait(tx_done);
-        `ASSERT_W_MSG({1'b0, 8'b10101010, 1'b1}, transmitted, "asserting transmitted bits");
+        `ASSERT_W_MSG({1'b0, 8'b10101010, 1'b1}, transmitted, "asserting transmitted bits")
         // start bit, data (LSB to MSB), stop bit
 
         // reinit for another byte
@@ -192,7 +196,7 @@ module uart_transmitter_tb;
 
         // wait for transmit complete
         wait(tx_done);
-        `ASSERT_W_MSG({1'b0, 8'b00110011, 1'b1}, transmitted, "asserting transmitted bits");
+        `ASSERT_W_MSG({1'b0, 8'b00110011, 1'b1}, transmitted, "asserting transmitted bits")
         // start bit, data (LSB to MSB), stop bit
         
         // done

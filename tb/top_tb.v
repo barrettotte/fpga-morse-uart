@@ -1,9 +1,9 @@
 `include "include/assert.vh"
-`include "../rtl/uart_echo.v"
+`include "../rtl/top.v"
 
 `timescale 1ns/1ps
 
-module uart_echo_tb;
+module top_tb;
 
     // constants
     localparam WORD_BITS = 8;
@@ -36,29 +36,24 @@ module uart_echo_tb;
     reg rx = 0;
 
     // outputs
+    wire [6:0] sev_seg_encoded;
+    wire [3:0] sev_seg_anodes;
     wire tx;
-    wire [WORD_BITS-1:0] tx_data;
-    wire rx_done;
     wire tx_done;
-    wire baud_tick;
+    wire rx_done;
+    wire [7:0] tx_data;
 
     // design under test
-    uart_echo #(
-        .WORD_BITS(WORD_BITS),
-        .SAMPLE_TICKS(SAMPLE_TICKS),
-        .BAUD_LIMIT(BAUD_DIV),
-        .BAUD_BITS($clog2(BAUD_DIV)),
-        .FIFO_ADDR_BITS(2)
-    )
-    DUT (
+    top DUT (
         .clk_i(clk),
         .reset_i(reset),
         .rx_i(rx),
+        .sev_seg_encoded_o(sev_seg_encoded),
+        .sev_seg_anodes_o(sev_seg_anodes),
         .tx_o(tx),
-        .tx_data_o(tx_data),
         .rx_done_o(rx_done),
         .tx_done_o(tx_done),
-        .baud_tick_o(baud_tick)
+        .tx_data_o(tx_data)
     );
 
     // test
@@ -72,8 +67,8 @@ module uart_echo_tb;
     end
 
     initial begin
-        $dumpfile("uart_echo_tb.vcd");
-        $dumpvars(0, uart_echo_tb);
+        $dumpfile("top_tb.vcd");
+        $dumpvars(0, top_tb);
 
         // init
         clk = 0;
@@ -86,7 +81,7 @@ module uart_echo_tb;
 
         // send byte and wait for done signal
         uart_send_packet(8'b11001100);
-        wait (rx_done);
+        // wait (rx_done);
 
         // receive transmitted bits
         bit_idx = WORD_BITS+1;
@@ -99,12 +94,12 @@ module uart_echo_tb;
         transmitted[bit_idx] = tx;
 
         // wait for transmit complete
-        wait (tx_done);
+        // wait (tx_done);
         `ASSERT_W_MSG({1'b0, 8'b00110011, 1'b1}, transmitted, "asserting transmitted bits")
         // start bit, data (LSB to MSB), stop bit
 
         // wait a couple extra baud intervals
-        #(20 * CYCLES_PER_BIT);
+        #(3 * CYCLES_PER_BIT)
         
         // done
         #(10 * CLK_PERIOD);

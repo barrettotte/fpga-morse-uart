@@ -23,7 +23,7 @@ module uart_transmitter
                      STATE_DATA  = 2'b10,
                      STATE_STOP  = 2'b11;
 
-    // internal
+    // wiring/regs
     reg [1:0] state_curr, state_next;         // state
     reg [3:0] tick_curr, tick_next;           // number of ticks from baud generator
     reg [2:0] nbits_curr, nbits_next;         // number of bits transmitted
@@ -106,6 +106,7 @@ module uart_transmitter
 
                 if (baud_i) begin
                     if (tick_curr == SAMPLE_TICKS-1) begin
+                        tick_next = 0;
                         state_next = STATE_IDLE;
                         tx_done_o = 1'b1;
                     end else begin
