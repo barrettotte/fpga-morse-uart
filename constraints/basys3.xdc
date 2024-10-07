@@ -33,7 +33,7 @@ set_property -dict { PACKAGE_PIN V4  IOSTANDARD LVCMOS33 } [get_ports {sev_seg_a
 set_property -dict { PACKAGE_PIN W4  IOSTANDARD LVCMOS33 } [get_ports {sev_seg_anodes_o[3]}]
 
 # LED 0-7
-# set_property -dict { PACKAGE_PIN U16 IOSTANDARD LVCMOS33 } [get_ports {x}]
+set_property -dict { PACKAGE_PIN U16 IOSTANDARD LVCMOS33 } [get_ports {morse_o}]
 # set_property -dict { PACKAGE_PIN E19 IOSTANDARD LVCMOS33 } [get_ports {x}]
 # set_property -dict { PACKAGE_PIN U19 IOSTANDARD LVCMOS33 } [get_ports {x}]
 # set_property -dict { PACKAGE_PIN V19 IOSTANDARD LVCMOS33 } [get_ports {x}]
@@ -45,14 +45,12 @@ set_property -dict { PACKAGE_PIN W4  IOSTANDARD LVCMOS33 } [get_ports {sev_seg_a
 # LED 8-15
 # set_property -dict { PACKAGE_PIN V13 IOSTANDARD LVCMOS33 } [get_ports {x}]
 # set_property -dict { PACKAGE_PIN V3  IOSTANDARD LVCMOS33 } [get_ports {x}]
-
-set_property -dict { PACKAGE_PIN W3  IOSTANDARD LVCMOS33 } [get_ports {morse_done_o}]
-set_property -dict { PACKAGE_PIN U3  IOSTANDARD LVCMOS33 } [get_ports {morse_o}]
-
-set_property -dict { PACKAGE_PIN P3  IOSTANDARD LVCMOS33 } [get_ports {rx_done_o}]
-set_property -dict { PACKAGE_PIN N3  IOSTANDARD LVCMOS33 } [get_ports {tx_done_o}]
-set_property -dict { PACKAGE_PIN P1  IOSTANDARD LVCMOS33 } [get_ports {uart_fifo_empty_o}]
-set_property -dict { PACKAGE_PIN L1  IOSTANDARD LVCMOS33 } [get_ports {uart_fifo_full_o}]
+# set_property -dict { PACKAGE_PIN W3  IOSTANDARD LVCMOS33 } [get_ports {x}]
+# set_property -dict { PACKAGE_PIN U3  IOSTANDARD LVCMOS33 } [get_ports {x}]
+# set_property -dict { PACKAGE_PIN P3  IOSTANDARD LVCMOS33 } [get_ports {x}]
+# set_property -dict { PACKAGE_PIN N3  IOSTANDARD LVCMOS33 } [get_ports {x}]
+# set_property -dict { PACKAGE_PIN P1  IOSTANDARD LVCMOS33 } [get_ports {x}]
+# set_property -dict { PACKAGE_PIN L1  IOSTANDARD LVCMOS33 } [get_ports {x}]
 
 # Center button
 set_property -dict { PACKAGE_PIN U18 IOSTANDARD LVCMOS33 } [get_ports {reset_i}]

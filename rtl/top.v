@@ -8,20 +8,11 @@ module top
     (
         input wire clk_i,                    // clock (100MHz)
         input wire reset_i,                  // reset
-
         input wire rx_i,                     // bit received over UART
         output wire tx_o,                    // bit transmitted over UART
-
-        output wire rx_done_o,               // UART receive finished
-        output wire tx_done_o,               // UART transmit finished
-        output wire uart_fifo_empty_o,       // UART FIFO empty, no reads
-        output wire uart_fifo_full_o,        // UART FIFO full, no write
-
         output wire [6:0] sev_seg_encoded_o, // 7-segment encoded value
         output wire [3:0] sev_seg_anodes_o,  // 7-segment selector
-
-        output wire morse_o,                 // morse signal
-        output wire morse_done_o             // morse done signal
+        output wire morse_o                  // morse signal
     );
 
     // constants
@@ -34,11 +25,11 @@ module top
     localparam UART_FIFO_ADDR_BITS = 3;  // 8 bytes
     localparam MORSE_FIFO_ADDR_BITS = 6; // 64 bytes
     localparam SEV_SEG_REFRESH = 1000;
-    localparam MORSE_CYCLES = 5_000_000; // 50 * (10**6); // 50ms
+    localparam MORSE_CYCLES = 20_000_000; // 10 * (10**6); // 200ms
 
     // wiring/regs
-    wire [WORD_BITS-1:0] rx_data;
-    wire [WORD_BITS-1:0] tx_data;
+    wire [WORD_BITS-1:0] rx_data; // data from UART receiver to FIFO
+    wire [WORD_BITS-1:0] tx_data; // data from FIFO to UART transmitter
     wire morse_en;
 
     // UART echo
@@ -85,12 +76,10 @@ module top
         .clk_i(clk_i),
         .reset_i(reset_i),
         .ascii_i(rx_data),
-        .en_i(morse_en),
+        .en_i(rx_done_o),
         .morse_o(morse_o),
         .done_o(morse_done_o)
     );
-
-    assign morse_en = tx_done_o;
 
     // other outputs
     assign tx_data_o = tx_data;

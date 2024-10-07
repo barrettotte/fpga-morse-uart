@@ -1,8 +1,12 @@
 # fpga-morse-uart
 
-Receives ASCII over UART, echo it back, and output as morse code beeps.
+Receives ASCII over UART, echos it back, and outputs morse code signal on LED.
 
 Uses Basys 3 Artix-7 board (XC7A35TCPG236-1).
+
+## Diagram
+
+<image src="./docs/fpga-morse-uart.drawio.svg"></image>
 
 ## Serial Terminal
 

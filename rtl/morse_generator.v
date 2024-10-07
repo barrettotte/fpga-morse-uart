@@ -12,7 +12,7 @@ module morse_generator
         input wire [7:0] ascii_i, // ASCII character
         input wire en_i,          // transmit signal enable
         output reg morse_o,       // morse code signal
-        output reg done_o         // morse code signal done transmitting
+        output wire done_o        // morse code signal done transmitting
     );
 
     // constants
@@ -36,6 +36,7 @@ module morse_generator
     wire [5:0] morse_symbols;
     reg [2:0] state_curr, state_next;
     reg [2:0] symbol_curr, symbol_next;
+    reg done_curr, done_next;
     reg [COUNTER_BITS-1:0] count_curr, count_next;
 
     // ASCII to morse symbols
@@ -46,16 +47,21 @@ module morse_generator
         .morse_o(morse_symbols)
     );
 
+    // outputs
+    assign done_o = done_curr;
+
     // register logic
     always @(posedge clk_i or posedge reset_i) begin
         if (reset_i) begin
             state_curr <= STATE_IDLE;
             count_curr <= 0;
             symbol_curr <= 0;
+            done_curr <= 1;
         end else begin
             state_curr <= state_next;
             count_curr <= count_next;
             symbol_curr <= symbol_next;
+            done_curr <= done_next;
         end
     end
 
@@ -65,8 +71,7 @@ module morse_generator
         state_next = state_curr;
         count_next = count_curr;
         symbol_next = symbol_curr;
-        morse_o = 1'b0;
-        done_o = 1'b0;
+        done_next = done_curr;
 
         case (state_curr)
 
@@ -74,6 +79,8 @@ module morse_generator
             STATE_IDLE: begin
                 symbol_next = 0;
                 count_next = 0;
+                done_next = 1'b0;
+                morse_o = 1'b0;
 
                 if (en_i) begin
                     if (ascii_i == 8'h20) begin
@@ -87,6 +94,7 @@ module morse_generator
             // generate morse dot
             STATE_DOT: begin
                 morse_o = 1'b1;
+                done_next = 1'b0;
 
                 if (count_curr < DOT_CYCLES) begin
                     count_next = count_curr + 1;
@@ -99,6 +107,7 @@ module morse_generator
             // generate morse dash
             STATE_DASH: begin
                 morse_o = 1'b1;
+                done_next = 1'b0;
 
                 if (count_curr < DASH_CYCLES) begin
                     count_next = count_curr + 1;
@@ -111,16 +120,17 @@ module morse_generator
             // wait between morse symbols
             STATE_SYMBOL: begin
                 morse_o = 1'b0;
+                done_next = 1'b0;
 
                 if (count_curr < SYMBOL_CYCLES) begin
                     count_next = count_curr + 1;
                 end else begin
                     count_next = 0;
+                    symbol_next = symbol_curr + 1;
 
                     // check for next symbol in sequence
                     if ((symbol_curr + 1) < morse_len) begin
-                        symbol_next = symbol_curr + 1;
-                        state_next = (morse_symbols[symbol_curr] == 1'b1) ? STATE_DOT : STATE_DASH;
+                        state_next = (morse_symbols[symbol_curr + 1] == 1'b1) ? STATE_DOT : STATE_DASH;
                     end else begin
                         state_next = STATE_DONE;
                     end
@@ -131,6 +141,7 @@ module morse_generator
             STATE_WORD: begin
                 morse_o = 1'b0;
                 symbol_next = 0;
+                done_next = 1'b0;
 
                 if (count_curr < WORD_CYCLES) begin
                     count_next = count_curr + 1;
@@ -144,13 +155,19 @@ module morse_generator
             STATE_DONE: begin
                 morse_o = 1'b0;
                 symbol_next = 0;
-                done_o = 1'b1;
-                state_next = STATE_IDLE;
+                done_next = 1'b1;
+
+                if (!en_i) begin
+                    state_next = STATE_IDLE;
+                end
             end
 
             // invalid state, go back to idle
             default: begin
+                morse_o = 1'b0;
+                symbol_next = 0;
                 state_next = STATE_IDLE;
+                done_next = 1'b0;
             end
 
         endcase
