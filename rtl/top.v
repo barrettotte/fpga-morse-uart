@@ -22,15 +22,15 @@ module top
     localparam BAUD_RATE = 9600;
     localparam BAUD_DIV = CLK_FREQ / BAUD_RATE / SAMPLE_TICKS;
     localparam BAUD_BITS = $clog2(BAUD_DIV);
-    localparam UART_FIFO_ADDR_BITS = 3;  // 8 bytes
-    localparam MORSE_FIFO_ADDR_BITS = 6; // 64 bytes
+    localparam UART_FIFO_ADDR_BITS = 3; // 8 bytes
     localparam SEV_SEG_REFRESH = 1000;
     localparam MORSE_CYCLES = 20_000_000; // 10 * (10**6); // 200ms
 
     // wiring/regs
     wire [WORD_BITS-1:0] rx_data; // data from UART receiver to FIFO
     wire [WORD_BITS-1:0] tx_data; // data from FIFO to UART transmitter
-    wire morse_en;
+    wire rx_done, tx_done;
+    wire uart_fifo_empty, uart_fifo_full;
 
     // UART echo
     uart_echo #(
@@ -43,16 +43,13 @@ module top
         .clk_i(clk_i),
         .reset_i(reset_i),
         .rx_i(rx_i),
-
         .tx_o(tx_o),
         .tx_data_o(tx_data),
         .rx_data_o(rx_data),
-        .rx_done_o(rx_done_o),
-        .tx_done_o(tx_done_o),
-
-        .fifo_empty_o(uart_fifo_empty_o),
-        .fifo_full_o(uart_fifo_full_o),
-
+        .rx_done_o(rx_done),
+        .tx_done_o(tx_done),
+        .fifo_empty_o(uart_fifo_empty),
+        .fifo_full_o(uart_fifo_full),
         // disconnected
         .baud_tick_o()
     );
@@ -76,12 +73,10 @@ module top
         .clk_i(clk_i),
         .reset_i(reset_i),
         .ascii_i(rx_data),
-        .en_i(rx_done_o),
+        .en_i(rx_done),
         .morse_o(morse_o),
-        .done_o(morse_done_o)
+        // disconnected
+        .done_o()
     );
-
-    // other outputs
-    assign tx_data_o = tx_data;
 
 endmodule
